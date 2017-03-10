@@ -2,8 +2,10 @@ package gruppuppgift;
 
 
 
+import java.io.DataOutputStream;
 //import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 //import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.Socket;
@@ -21,10 +23,10 @@ public class ClientTest {
 		boolean connect = true; 
 		try{
 			//MyClient = new Socket("BENNY-ZENBOOK", 1500);
-			MyClient = new Socket("DESKTOP-5TCP05T", 1498);
+			MyClient = new Socket("DESKTOP-5TCP05T", 1497);
 		}
 		catch(Exception e){
-			System.out.println("Något gick åt helvete: " + e.getMessage());
+			System.out.println("Fan också! Något gick åt helvete: " + e.getMessage());
 			connect = false;
 		}
 		finally{
@@ -33,26 +35,21 @@ public class ClientTest {
 			}
 		}
 
-//		PrintStream output = null;;
-		java.io.OutputStream outstream = null;
+		ObjectOutputStream outstream = null;
 		try {
-			outstream = MyClient.getOutputStream(); 
-			PrintWriter out = new PrintWriter(outstream);
-			String toSend = "Hello World!";
-			out.print(toSend);
+			outstream = new ObjectOutputStream( MyClient.getOutputStream()); 
+			
+			String toSend = "Hello server!";
+			outstream.writeObject(toSend);
 
-//			output = new PrintStream (MyClient.getOutputStream());
-//			output.print("Hello World");
-//			System.out.println(output.toString());
 		}
 		catch (Exception e) {
 			System.out.println(e);
 		}
 
 		try {
-			//output.close();
+			
 			outstream.close();
-			//input.close();
 			MyClient.close();
 		} 
 		catch (IOException e) {
@@ -63,11 +60,10 @@ public class ClientTest {
 
 	public static void main(String[] args) {
 		Socket socket = new Socket();
-		ClientTest client = new ClientTest(socket, 1500);
+		ClientTest client = new ClientTest(socket, 1497);
 		try {
 			client.start();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
