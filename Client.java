@@ -1,7 +1,5 @@
 package clientSystem;
 
-
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -46,7 +44,7 @@ public class Client {
 						connected = true;
 					}		
 				}catch(Exception e){
-					System.out.println("Failed to " + user + " connect. Error msg: " + e.getMessage());
+					System.out.println(user + " failed to connect. Error msg: " + e.getMessage());
 				}
 				finally{
 					if(connected){
@@ -74,12 +72,12 @@ public class Client {
 
 	public void sendMessage(String msg) throws IOException{
 		ObjectOutputStream oos = connection.getOos();
-		String date = new SimpleDateFormat("yyyy.MM.dd").format(new Date());
-		String timeStamp = new SimpleDateFormat("HH.mm.ss").format(new Date());
-		oos.writeObject("DATE " + date + " TIME " + timeStamp + " | " + user + " : " + msg);
+		oos.writeObject(getTimeStamp() + "| " + user + " : " + msg);
 	}
 
-	public void disconnect(){
+	public void disconnect() throws IOException{
+		ObjectOutputStream oos = connection.getOos();
+		oos.writeObject(getTimeStamp() + user + " disconnected from server." );
 		Socket clientsSocket = connection.getSocket();
 		try{
 			clientsSocket.close();
@@ -94,6 +92,10 @@ public class Client {
 		this.connection = new Connection(ip, port);
 		connection.start();
 	}
-
+	public String getTimeStamp(){	
+		String date = new SimpleDateFormat("yyyy.MM.dd").format(new Date());
+		String timeStamp = new SimpleDateFormat("HH.mm.ss").format(new Date());
+		return "DATE " + date + " TIME " + timeStamp + " ";
+	}
 }
 

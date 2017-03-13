@@ -1,4 +1,4 @@
-package ClientSystem;
+package clientSystem;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -68,6 +68,7 @@ public class Server1 extends Thread {
 						socket = serverSocket.accept();
 						ClientHandler clientHandler = new ClientHandler(socket);
 						onlineLog.info("Client genom port: " + port);
+						offlineLog.info("Client logged off: " + port);
 					} catch (IOException e){
 						if(socket!=null)
 							socket.close();
@@ -83,6 +84,7 @@ public class Server1 extends Thread {
 
 		public void shutDown() throws IOException {
 			serverSocket.close();
+			
 		}
 
 
@@ -110,6 +112,7 @@ public class Server1 extends Thread {
 					String text = (String) ois.readObject();
 					System.out.println(text);
 					messagesLog.info("Sent from: "+ port + "Message" + text);
+					
 
 				} catch (ClassNotFoundException e) {} catch (IOException e) {
 					// TODO Auto-generated catch block
