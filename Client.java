@@ -1,4 +1,6 @@
-package clientSystem;
+package ClientSystem;
+
+
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -13,12 +15,14 @@ public class Client {
 	private String ip;
 	private String user;
 	private Connection connection;
+	private User user1;
 
 	public Client(String user, String ip, int port) throws UnknownHostException, IOException {
 		super();
 		this.port = port;
 		this.ip = ip;
 		this.user = user;
+		
 	}
 
 	public class Connection extends Thread {
@@ -27,11 +31,15 @@ public class Client {
 		private int port;
 		boolean connected = false;
 		public ObjectOutputStream oos;
+		private String user1;
 
-		public Connection(String ip, int port){
+
+		public Connection(String user1, String ip, int port){
 			this.port = port;
 			this.ip = ip;
 			this.socket = null;
+			this.user1 = user1;
+			
 		}
 
 
@@ -44,7 +52,7 @@ public class Client {
 						connected = true;
 					}		
 				}catch(Exception e){
-					System.out.println(user + " failed to connect. Error msg: " + e.getMessage());
+					System.out.println("Failed to " + user + " connect. Error msg: " + e.getMessage());
 				}
 				finally{
 					if(connected){
@@ -72,12 +80,12 @@ public class Client {
 
 	public void sendMessage(String msg) throws IOException{
 		ObjectOutputStream oos = connection.getOos();
-		oos.writeObject(getTimeStamp() + "| " + user + " : " + msg);
+		//String date = new SimpleDateFormat("yyyy.MM.dd").format(new Date());
+		//String timeStamp = new SimpleDateFormat("HH.mm").format(new Date());
+		oos.writeObject(" | " + user + " : " + msg);
 	}
 
-	public void disconnect() throws IOException{
-		ObjectOutputStream oos = connection.getOos();
-		oos.writeObject(getTimeStamp() + user + " disconnected from server." );
+	public void disconnect(){
 		Socket clientsSocket = connection.getSocket();
 		try{
 			clientsSocket.close();
@@ -89,13 +97,9 @@ public class Client {
 	}
 
 	public void connect(){
-		this.connection = new Connection(ip, port);
+		this.connection = new Connection("user1", ip, port);
 		connection.start();
+		
 	}
-	public String getTimeStamp(){	
-		String date = new SimpleDateFormat("yyyy.MM.dd").format(new Date());
-		String timeStamp = new SimpleDateFormat("HH.mm.ss").format(new Date());
-		return "DATE " + date + " TIME " + timeStamp + " ";
-	}
-}
 
+}
