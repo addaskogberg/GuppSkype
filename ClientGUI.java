@@ -1,10 +1,10 @@
-package clientSystem;
-
+package chat;
 import javax.swing.*;
+
 
 import java.awt.*;
 import java.awt.event.*;
-import java.io.IOException;
+
 
 
 public class ClientGUI extends JFrame implements ActionListener {
@@ -12,72 +12,65 @@ public class ClientGUI extends JFrame implements ActionListener {
 	private static final long serialVersionUID = 1L;
 	private JLabel label;
 	private JTextField tf;
-	private JTextField tfip, tfPort;
-	private JButton login, logout;
+	private JTextField tfServer, tfPort;
+	private JButton login, logout, whoIsIn;
 	private JTextArea ta;
-
-	private JTextArea ta2;
-
 	private boolean connected;
 	private Client client;
-
+	private int defaultPort;
+	private String defaultHost;
 
 	ClientGUI(String host, int port) {
 
-		super("Gruppuppgift");
-
+		super("Chat Client");
+		defaultPort = port;
+		defaultHost = host;
+		
 		JPanel northPanel = new JPanel(new GridLayout(3,1));
-		JPanel ipAndPort = new JPanel(new GridLayout(1,5, 1, 3));
-		tfip = new JTextField(host);
+		JPanel serverAndPort = new JPanel(new GridLayout(1,5, 1, 3));
+		tfServer = new JTextField(host);
 		tfPort = new JTextField("" + port);
 		tfPort.setHorizontalAlignment(SwingConstants.RIGHT);
 
-		ipAndPort.add(new JLabel("ip:  "));
-		ipAndPort.add(tfip);
-		ipAndPort.add(new JLabel("Port:  "));
-		ipAndPort.add(tfPort);
-		ipAndPort.add(new JLabel(""));
-		northPanel.add(ipAndPort);
+		serverAndPort.add(new JLabel("Server Address:  "));
+		serverAndPort.add(tfServer);
+		serverAndPort.add(new JLabel("Port Number:  "));
+		serverAndPort.add(tfPort);
+		serverAndPort.add(new JLabel(""));
+		northPanel.add(serverAndPort);
 
-		label = new JLabel("Ange användarnamn", SwingConstants.CENTER);
+		label = new JLabel("Enter your username below", SwingConstants.CENTER);
 		northPanel.add(label);
-		tf = new JTextField(" ");
+		tf = new JTextField("Anonymous");
 		tf.setBackground(Color.WHITE);
 		northPanel.add(tf);
 		add(northPanel, BorderLayout.NORTH);
 
-		ta = new JTextArea("Välkommen\n", 80, 80);
+		ta = new JTextArea("Welcome to the Chat room\n", 80, 80);
 		JPanel centerPanel = new JPanel(new GridLayout(1,1));
 		centerPanel.add(new JScrollPane(ta));
 		ta.setEditable(false);
 		add(centerPanel, BorderLayout.CENTER);
 
-		login = new JButton("Logga in");
+		login = new JButton("Login");
 		login.addActionListener(this);
-		logout = new JButton("Logga ut");
+		logout = new JButton("Logout");
 		logout.addActionListener(this);
-		logout.setEnabled(false);		
-
+		logout.setEnabled(false);	
+		whoIsIn = new JButton("Who is in");
+		whoIsIn.addActionListener(this);
+		whoIsIn.setEnabled(false);	
 		JPanel southPanel = new JPanel();
 		southPanel.add(login);
 		southPanel.add(logout);
-
+		southPanel.add(whoIsIn);
 		add(southPanel, BorderLayout.SOUTH);
-
-
-		JPanel eastPanel = new JPanel(new GridLayout(1,1));
-		add(eastPanel, BorderLayout.EAST);
-		ta2 = new JTextArea("Användare online", 80, 80);
-		eastPanel.setPreferredSize(new Dimension(150,600));
-		eastPanel.add(new JScrollPane(ta2));
-		ta2.setEditable(false);
-		add(eastPanel, BorderLayout.EAST);
-
 
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setSize(600, 600);
 		setVisible(true);
 		tf.requestFocus();
+
 	}
 
 	void append(String str) {
@@ -88,37 +81,47 @@ public class ClientGUI extends JFrame implements ActionListener {
 	void connectionFailed() {
 		login.setEnabled(true);
 		logout.setEnabled(false);
+		whoIsIn.setEnabled(false);
+		label.setText("Enter your username below");
+		tf.setText("Anonymous");
+	
+		tfPort.setText("" + defaultPort);
+		tfServer.setText(defaultHost);
 
-		label.setText("Ange ditt användarnamn nedan	");
-		tf.setText("Anonym");
-		tfPort.setText("") ;
-
-		tfip.setEditable(false);
+		tfServer.setEditable(false);
 		tfPort.setEditable(false);
 		tf.removeActionListener(this);
 		connected = false;
 	}
-
-
+		
 	public void actionPerformed(ActionEvent e) {
 		Object o = e.getSource();
-
 		if(o == logout) {
+			client.sendMessage(new ChatMessage(ChatMessage.LOGOUT, ""));
 			return;
 		}
-		if(connected) {
+		
+		if(o == whoIsIn) {
+			client.sendMessage(new ChatMessage(ChatMessage.WHOISIN, ""));				
+			return;
+		}
 
+	
+		if(connected) {
+			client.sendMessage(new ChatMessage(ChatMessage.MESSAGE, tf.getText()));				
 			tf.setText("");
 			return;
 		}
+		
 
 		if(o == login) {
 			String username = tf.getText().trim();
 			if(username.length() == 0)
 				return;
-			String ip = tfip.getText().trim();
-			if(ip.length() == 0)
+			String server = tfServer.getText().trim();
+			if(server.length() == 0)
 				return;
+	
 			String portNumber = tfPort.getText().trim();
 			if(portNumber.length() == 0)
 				return;
@@ -127,20 +130,19 @@ public class ClientGUI extends JFrame implements ActionListener {
 				port = Integer.parseInt(portNumber);
 			}
 			catch(Exception en) {
-				return;
-			}
-			try {
-				client = new Client(username, ip, port);
-			} catch (IOException e1) {
-				e1.printStackTrace();
+				return;   
 			}
 
+			client = new Client(user, ip, port, this);
+		
 			tf.setText("");
-			label.setText("Skriv dtt meddelande nedan");
+			label.setText("Enter your message below");
 			connected = true;
+			
 			login.setEnabled(false);
 			logout.setEnabled(true);
-			tfip.setEditable(false);
+			whoIsIn.setEnabled(true);
+			tfServer.setEditable(false);
 			tfPort.setEditable(false);
 			tf.addActionListener(this);
 		}
@@ -148,6 +150,7 @@ public class ClientGUI extends JFrame implements ActionListener {
 	}
 
 	public static void main(String[] args) {
-		new ClientGUI(" ", 0);
+		new ClientGUI("localhost", 1500);
 	}
+
 }
