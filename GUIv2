@@ -7,6 +7,7 @@ import clientSystem.Client;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.IOException;
 
 
 
@@ -15,7 +16,7 @@ public class ClientGUI extends JFrame implements ActionListener {
 	private static final long serialVersionUID = 1L;
 	private JLabel label;
 	private JTextField tf;
-	private JTextField tfServer, tfPort;
+	private JTextField tfip, tfPort;
 	private JButton login, logout;
 	private JTextArea ta;
 	
@@ -32,17 +33,17 @@ public class ClientGUI extends JFrame implements ActionListener {
 	
 		
 		JPanel northPanel = new JPanel(new GridLayout(3,1));
-		JPanel serverAndPort = new JPanel(new GridLayout(1,5, 1, 3));
-		tfServer = new JTextField(host);
+		JPanel ipAndPort = new JPanel(new GridLayout(1,5, 1, 3));
+		tfip = new JTextField(host);
 		tfPort = new JTextField("" + port);
 		tfPort.setHorizontalAlignment(SwingConstants.RIGHT);
 
-		serverAndPort.add(new JLabel("Server:  "));
-		serverAndPort.add(tfServer);
-		serverAndPort.add(new JLabel("Port:  "));
-		serverAndPort.add(tfPort);
-		serverAndPort.add(new JLabel(""));
-		northPanel.add(serverAndPort);
+		ipAndPort.add(new JLabel("ip:  "));
+		ipAndPort.add(tfip);
+		ipAndPort.add(new JLabel("Port:  "));
+		ipAndPort.add(tfPort);
+		ipAndPort.add(new JLabel(""));
+		northPanel.add(ipAndPort);
 
 		label = new JLabel("Ange användarnamn", SwingConstants.CENTER);
 		northPanel.add(label);
@@ -98,7 +99,7 @@ public class ClientGUI extends JFrame implements ActionListener {
 		tf.setText("Anonym");
 		tfPort.setText("") ;
 		
-		tfServer.setEditable(false);
+		tfip.setEditable(false);
 		tfPort.setEditable(false);
 		tf.removeActionListener(this);
 		connected = false;
@@ -117,8 +118,8 @@ public class ClientGUI extends JFrame implements ActionListener {
 			String username = tf.getText().trim();
 			if(username.length() == 0)
 				return;
-			String server = tfServer.getText().trim();
-			if(server.length() == 0)
+			String ip = tfip.getText().trim();
+			if(ip.length() == 0)
 				return;
 			String portNumber = tfPort.getText().trim();
 			if(portNumber.length() == 0)
@@ -129,10 +130,20 @@ public class ClientGUI extends JFrame implements ActionListener {
 			}
 			catch(Exception en) {
 				return;
+			}
+				try {
+					client = new Client(username, ip, port);
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+	
+				tf.setText("");
+				label.setText("Skriv ditt meddelande nedan");
+				connected = true;
 		}
 			
 
-	} }
+	} 
 
 	public static void main(String[] args) {
 		new ClientGUI(" ", 0);
