@@ -113,7 +113,6 @@ public class ClientGUI extends JFrame implements ActionListener {
 		return;
 	}
 		if(connected) {
-						
 			tf.setText("");
 			return;
 		}
