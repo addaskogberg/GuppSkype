@@ -3,7 +3,7 @@ package clientSystem;
 import javax.swing.*;
 
 
-import chat.Client;
+import clientSytem.Client;
 
 import java.awt.*;
 import java.awt.event.*;
