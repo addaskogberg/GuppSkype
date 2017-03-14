@@ -112,7 +112,11 @@ public class ClientGUI extends JFrame implements ActionListener {
 		if(o == logout) {
 		return;
 	}
-
+		if(connected) {
+						
+			tf.setText("");
+			return;
+		}
 
 		if(o == login) {
 			String username = tf.getText().trim();
@@ -138,7 +142,7 @@ public class ClientGUI extends JFrame implements ActionListener {
 				}
 	
 				tf.setText("");
-				label.setText("Enter your message below");
+				label.setText("Skriv dtt meddelande nedan");
 				connected = true;
 				login.setEnabled(false);
 				logout.setEnabled(true);
