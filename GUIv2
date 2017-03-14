@@ -138,12 +138,19 @@ public class ClientGUI extends JFrame implements ActionListener {
 				}
 	
 				tf.setText("");
-				label.setText("Skriv ditt meddelande nedan");
+				label.setText("Enter your message below");
 				connected = true;
+				login.setEnabled(false);
+				logout.setEnabled(true);
+				tfip.setEditable(false);
+				tfPort.setEditable(false);
+				tf.addActionListener(this);
+			}
+		
 		}
 			
 
-	} 
+	 
 
 	public static void main(String[] args) {
 		new ClientGUI(" ", 0);
