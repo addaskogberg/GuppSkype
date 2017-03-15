@@ -169,6 +169,7 @@ public class ClientGUI extends JFrame implements ActionListener {
 				connected = true;
 				login.setEnabled(false);
 				logout.setEnabled(true);
+				send.setEnabled(true);
 				tfip.setEditable(false);
 				tfPort.setEditable(false);
 				tf.addActionListener(this);
@@ -181,22 +182,25 @@ public class ClientGUI extends JFrame implements ActionListener {
 		
 		//new ClientGUI("Vedrana", 144);
 		int port =  2543; //Ändra till valfri port vid behov
-		String ip = "Sandras-MacBook-Pro.local"; //Ändra till er ip
+		String ip = "10.3.10.133"; //Ändra till er ip
 		
 		Server1 server = new Server1(port);
 
-		Client client1 = new Client("Vedrana", ip, port);
+//		Client client1 = new Client("Vedrana", ip, port);
 		Client client2 = new Client("Adda", ip, port);
-		Client client3 = new Client("Sandra", ip, port);
-		//Client client4 = new Client("Evelyn", ip, port);
+//		Client client3 = new Client("Sandra", ip, port);
+		Client client4 = new Client("Evelyn", ip, port);
 
-		client1.connect();
+//		client1.connect();
 		client2.connect();
-		client3.connect();
-		//client4.connect();
-		new ClientGUI("Vedrana",ip, port);
+//		client3.connect();
+		client4.connect();
+//		new ClientGUI("Vedrana",ip, port);
 		new ClientGUI("Adda", ip, port);
-		new ClientGUI("Sandra", ip, port);
+//		new ClientGUI("Sandra", ip, port);
+		new ClientGUI("Evelyn", ip, port);
+
 		server.list();
 	}
 
+}
