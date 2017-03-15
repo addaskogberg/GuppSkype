@@ -3,11 +3,9 @@ package clientSystem;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
 import javax.swing.ImageIcon;
 
 public class Message implements Serializable{
-	
 	private String type;
 	private String sender;
 	private String message;
@@ -37,7 +35,6 @@ public class Message implements Serializable{
 		return recipient;
 	}
 	
-	
 	public String getMessage(){
 		return getTimeStamp() + "| " + sender + " : " + message;
 	}
@@ -45,9 +42,7 @@ public class Message implements Serializable{
 	public ImageIcon getPicture(){
 		return picture;
 	}
-	
-	
-	
+		
 	public String getTimeStamp(){	
 		String date = new SimpleDateFormat("yyyy.MM.dd").format(new Date());
 		String timeStamp = new SimpleDateFormat("HH.mm.ss").format(new Date());
@@ -57,5 +52,4 @@ public class Message implements Serializable{
 	public String getSender(){
 		return sender;
 	}
-	
 }
