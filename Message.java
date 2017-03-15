@@ -6,6 +6,7 @@ import java.util.Date;
 import javax.swing.ImageIcon;
 
 public class Message implements Serializable{
+	
 	private String type;
 	private String sender;
 	private String message;
@@ -26,7 +27,6 @@ public class Message implements Serializable{
 		this.recipient = recipient;
 	}
 
-	
 	public String getType(){
 		return type;
 	}
@@ -42,7 +42,7 @@ public class Message implements Serializable{
 	public ImageIcon getPicture(){
 		return picture;
 	}
-		
+	
 	public String getTimeStamp(){	
 		String date = new SimpleDateFormat("yyyy.MM.dd").format(new Date());
 		String timeStamp = new SimpleDateFormat("HH.mm.ss").format(new Date());
