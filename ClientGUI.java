@@ -1,50 +1,31 @@
-package clientSystem;
+package gruppu;
 
 import javax.swing.*;
-
-
-
+import gruppu.Client;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
-import java.net.UnknownHostException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-
-
+import gruppu.Server1;
 
 public class ClientGUI extends JFrame implements ActionListener {
-
+	private static final long serialVersionUID = 1L;
 	private JLabel label;
 	private JTextField tf;
-	private JTextField tf2;
 	private JTextField tfip, tfPort;
-	private JButton login, logOut,send;
+	private JButton login, logout,send;
 	private JTextArea ta;
-	private GridLayout onlineList;
-	private JPanel eastPanel;
+	private JTextArea ta2;
 	private boolean connected;
 	private Client client;
-	private String ipConnect;
-	private int portConnect;
-	private String host;
-	private String sendTo;
-	
 
-
-	ClientGUI(String host, String ip, int port, Client client) throws IOException {
+	ClientGUI(String host, String ip, int port) throws IOException {
 		super("Gruppuppgift");
-		this.client = client;
-		this.ipConnect = ip;
-		this.host = host;
-		this.portConnect = port;
-		
+
 		JPanel northPanel = new JPanel(new GridLayout(3,1));
 		JPanel ipAndPort = new JPanel(new GridLayout(1,5, 1, 3));
-		tfip = new JTextField(ipConnect);
+		tfip = new JTextField(ip);
 		tfPort = new JTextField("" + port);
-		tfPort.setHorizontalAlignment(SwingConstants.LEFT);
+		tfPort.setHorizontalAlignment(SwingConstants.RIGHT);
 
 		ipAndPort.add(new JLabel("ip:  "));
 		ipAndPort.add(tfip);
@@ -52,18 +33,15 @@ public class ClientGUI extends JFrame implements ActionListener {
 		ipAndPort.add(tfPort);
 		ipAndPort.add(new JLabel(""));
 		northPanel.add(ipAndPort);
-		
-		label = new JLabel("Ange användarnamn", SwingConstants.CENTER);
+
+		label = new JLabel("Ange anvÃ¤ndarnamn", SwingConstants.CENTER);
 		northPanel.add(label);
-		tf = new JTextField(host);
+		tf = new JTextField(" ");
 		tf.setBackground(Color.WHITE);
-		tf2 = new JTextField("");
-		tf2.setBackground(Color.WHITE);
-		northPanel.add(tf2);
 		northPanel.add(tf);
 		add(northPanel, BorderLayout.NORTH);
 
-		ta = new JTextArea("Välkommen\n", 80, 80);
+		ta = new JTextArea("VÃ¤lkommen\n", 80, 80);
 		JPanel centerPanel = new JPanel(new GridLayout(1,1));
 		centerPanel.add(new JScrollPane(ta));
 		ta.setEditable(false);
@@ -71,45 +49,52 @@ public class ClientGUI extends JFrame implements ActionListener {
 
 		login = new JButton("Logga in");
 		login.addActionListener(this);
-		logOut = new JButton("Logga ut");
-		logOut.addActionListener(this);
-		logOut.setEnabled(false);		
-		send = new JButton("sänd");
+		logout = new JButton("Logga ut");
+		logout.addActionListener(this);
+		logout.setEnabled(false);		
+		send = new JButton("sÃ¤nd");
 		send.addActionListener(this);
-		send.setEnabled(true);		
+		send.setEnabled(false);		
 
 		JPanel southPanel = new JPanel();
 		southPanel.add(login);
-		southPanel.add(logOut);
+		southPanel.add(logout);
 		southPanel.add(send);
-		
 
 		add(southPanel, BorderLayout.SOUTH);
 
-		this.eastPanel = new JPanel(new GridLayout(0,1));
+		JPanel eastPanel = new JPanel(new GridLayout(1,1));
 		add(eastPanel, BorderLayout.EAST);
-		//getOnlineList
-		//onlineList = new JTextArea(host, 80, 80);
-		//onlineList = new JTextArea("Användare online", 80, 80);
-		//onlineList = new GridLayout(10, 1);
-		//add(onlineList, BorderLayout.EAST);
 
-		//onlineList.setLayout(new GridLayout(rows, cols));
-
+		ta2 = new JTextArea(host, 80, 80);
+		ta2 = new JTextArea("AnvÃ¤ndare online", 80, 80);
 		eastPanel.setPreferredSize(new Dimension(150,600));
-		eastPanel.add(new JScrollPane());
-		//onlineList.setEditable(false);
+		eastPanel.add(new JScrollPane(ta2));
+		ta2.setEditable(false);
 		add(eastPanel, BorderLayout.EAST);
-
 
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setSize(600, 600);
 		setVisible(true);
 		tf.requestFocus();
-
-		//this.client = new Client(host, ip, port);
 	}
 
+	public void getMessagesWhileConnected(){
+		System.out.println("Hej frÃ¥n metoden");
+		ta.setText(client.getMessage());
+		/*if(client.getMessage().length() > 0 ){
+			ta.setText(client.getMessage());			
+		}
+		else
+		{
+			System.out.println("Inget frÃ¥n servern");
+		}*/
+	}
+
+	public void noMethod(){
+		System.out.println("Kallar pÃ¥ en metod");
+	}
+	
 	void append(String str) {
 		ta.append(str);
 		ta.setCaretPosition(ta.getText().length() - 1);
@@ -117,9 +102,9 @@ public class ClientGUI extends JFrame implements ActionListener {
 
 	void connectionFailed() {
 		login.setEnabled(true);
-		logOut.setEnabled(true);
+		logout.setEnabled(false);
 
-		label.setText("Ange ditt användarnamn nedan	");
+		label.setText("Ange ditt anvÃ¤ndarnamn nedan	");
 		tf.setText("Anonym");
 		tfPort.setText("") ;
 
@@ -129,59 +114,38 @@ public class ClientGUI extends JFrame implements ActionListener {
 		connected = false;
 	}
 
-
 	public void actionPerformed(ActionEvent e) {
 		Object o = e.getSource();
-		System.out.println(e);
-		String buttonText = e.getActionCommand();
-		
-		if(o == send) {
-			///System.out.println("SEEEEEEEEEEEEEEEND");
-			try {
 
-				String tt = tf2.getText();
-				client.sendMessage(sendTo, tt);
-				
-				setChat(getTimeStamp() + " :> " + sendTo + " : " + tt);
-			} catch (IOException e1) {
+		if(o == send) {
+			try 
+			{
+				//String tt = ta.getText();
+				String tt = tf.getText();
+				//System.out.println("Meddelande skickas: " + tt);
+				client.sendMessage(tt);
+				//ta.setText(client.getMessage());
+				getMessagesWhileConnected();
+
+			} 
+			catch (IOException e1) 
+			{
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 		}
-//		if(connected) {
-//			tf.setText("");
-//			return;
-//		}
-		if(buttonText != null && buttonText != "Logga ut" &&  buttonText != "sänd" && buttonText != "Logga in") {
-			setSendTo(buttonText);
+		if(connected) {
+			tf.setText("");
+			return;
 		}
-		
-		if(o == logOut) {
-			System.out.println("LOGGING OUT");
-			try {
-				client.disconnect();
-				eastPanel.removeAll();
-				eastPanel.revalidate();
-				eastPanel.repaint();
-				connected = false;
-				login.setEnabled(true);
-				logOut.setEnabled(false);
-				send.setEnabled(false);
-				tfip.setEditable(true);
-				tfPort.setEditable(true);
-				tf.setEnabled(true);
 
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				//e1.printStackTrace();
-			}catch (NullPointerException b){
-				
-			}
+		if(o == logout) {
+			return;
 		}
-//		if(connected) {
-//			tf.setText("");
-//			return;
-//		}
+		if(connected) {
+			tf.setText("");
+			return;
+		}
 
 		if(o == login) {
 			String username = tf.getText().trim();
@@ -200,61 +164,76 @@ public class ClientGUI extends JFrame implements ActionListener {
 			catch(Exception en) {
 				return;
 			}
-//			try {
-//				client = new Client(username, ip, port);
-//			} catch (IOException e1) {
-//				e1.printStackTrace();
-//			}
-			System.out.println("Försöker LOGGA IN");
-			client.setIp(ip);
-			client.setPort(port);
-			client.setUser(username);
-			client.connect();
+			try {
+				client = new Client(username, ip, port);
+				client.connect();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
 
-		
+			tf.setText("");
 			label.setText("Skriv dtt meddelande nedan");
 			connected = true;
 			login.setEnabled(false);
-			logOut.setEnabled(true);
+			logout.setEnabled(true);
 			send.setEnabled(true);
-			tf.setEnabled(false);
 			tfip.setEditable(false);
 			tfPort.setEditable(false);
-			tf.setEditable(false);
 			tf.addActionListener(this);
-			logOut.addActionListener(this);
-			ta.repaint();
 		}
-
 	}
+	
 
-	public void setOnlineList(ArrayList<String> onlineList){
-		try{
-			eastPanel.removeAll();
-			for (int i = 0; i < onlineList.size(); i++) {
-				JButton button = new JButton(onlineList.get(i));
-				eastPanel.add(button);
-				button.addActionListener(this);
-			}}  catch (NullPointerException e){
+	public static void main(String[] args) throws IOException {
+		//new ClientGUI("Vedrana", 144);
+		int port =  2533; //Ã„ndra till valfri port vid behov
+		String ip = "192.168.2.53"; //Ã„ndra till er ip
+
+		Server1 server = new Server1(port);
+
+		//Client client1 = new Client("Vedrana", ip, port);
+		//Client client2 = new Client("Adda", ip, port);
+		//Client client3 = new Client("Sandra", ip, port);
+		//Client client4 = new Client("Evelyn", ip, port);
+
+		//client1.connect();
+		//client2.connect();
+		//client3.connect();
+		//client4.connect();
 		
-			}
-		System.out.println(onlineList.size() + " " + host);
-		eastPanel.revalidate();
-	}
 
-	public void setSendTo(String sendTo){
-		this.sendTo = sendTo;
-	}
-	
-	public void setChat(String newRow){
-		
-		ta.setText(ta.getText() + "\n" + newRow);
-	}
-	
-	
-	public String getTimeStamp(){	
-		String date = new SimpleDateFormat("yyyy.MM.dd").format(new Date());
-		String timeStamp = new SimpleDateFormat("HH.mm.ss").format(new Date());
-		return "DATE " + date + " TIME " + timeStamp + " ";
+		ClientGUI clientGUI = new ClientGUI("Adda", ip, port);
+		ClientGUI clientGUI2 = new ClientGUI("Sandra", ip, port);
+		ClientGUI clientGUI3 = new ClientGUI("Vedrana",ip, port);
+		ClientGUI clientGUI4 = new ClientGUI("Evelyn", ip, port);
+		/*	
+		clientGUI.getMessagesWhileConnected();
+		clientGUI2.getMessagesWhileConnected();
+		clientGUI3.getMessagesWhileConnected();
+		clientGUI4.getMessagesWhileConnected();
+		*/
+		/*
+		while(true){
+			
+			clientGUI.getMessagesWhileConnected();
+			clientGUI2.getMessagesWhileConnected();
+			clientGUI3.getMessagesWhileConnected();
+			clientGUI4.getMessagesWhileConnected();
+
+			clientGUI.ta.setText(server.getListMessages().toString());
+			clientGUI2.ta.setText(server.getListMessages().toString());
+			clientGUI3.ta.setText(server.getListMessages().toString());
+			clientGUI4.ta.setText(server.getListMessages().toString());
+
+			clientGUI.ta.setText(clientGUI.client.getMessage());
+			clientGUI2.ta.setText(clientGUI2.client.getMessage());
+			clientGUI3.ta.setText(clientGUI3.client.getMessage());
+			clientGUI4.ta.setText(clientGUI4.client.getMessage());
+
+
+			
+		}
+		 */
+		//server.list();
 	}
 }

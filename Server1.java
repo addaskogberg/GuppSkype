@@ -1,22 +1,15 @@
-package clientSystem;
+package gruppu;
 
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
-
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-
-
 
 public class Server1 extends Thread {
 	private Connection connection;
@@ -27,22 +20,31 @@ public class Server1 extends Thread {
 	private FileHandler onlineFile = null;
 	private FileHandler offlineFile = null;
 	private FileHandler messagesSentFile = null;
-	private MessageHandler messageHandler;
-	private ArrayList<ClientHandler> userList;
-	private ArrayList<Message> messageList;
+	private User user1;
+	private String user;
+	private ArrayList<String> listUsers;
+	private ArrayList<String> listMessages;
 
+	public ArrayList<String> getListMessages() {
+		return listMessages;
+	}
+
+	public String getListMessagesAsString() {
+		return listMessages.toString();
+	}
+	
+	public void setListMessages(ArrayList<String> listMessages) {
+		this.listMessages = listMessages;
+	}
 
 	public Server1(int port) {
-		//super();
 		System.out.println("Trying to boot server.");
-		this.userList = new ArrayList<ClientHandler>();
-		this.messageList = new ArrayList<Message>();
 		this.port = port;
-		this.messageHandler = new MessageHandler();
-		this.connection = new Connection(port);
+		this.connection = new Connection(user, port);
+		this.listUsers = new ArrayList<String>();
+		this.listMessages = new ArrayList<String>();
+		//listMessages.add("Välkommen till Servern!");
 		connection.start();
-		messageHandler.start();
-
 		try {
 			onlineFile = new FileHandler("myapp-log.%u.%g.txt");
 			System.out.println(onlineFile);
@@ -50,7 +52,6 @@ public class Server1 extends Thread {
 			System.out.println(offlineFile);
 			messagesSentFile = new FileHandler("myapp-log.%u.%g.txt");
 			System.out.println(messagesSentFile);
-
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -61,198 +62,106 @@ public class Server1 extends Thread {
 		offlineLog.addHandler(offlineFile);
 		messagesSentFile.setFormatter(new SimpleFormatter());
 		messagesLog.addHandler(messagesSentFile);
-		// membersonline.setUseParentHandlers(false);
 	}
-
-
-
-	////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////
-
-	private class MessageHandler extends Thread{;
-	private Message msg;
-
-	public MessageHandler(){
-
-	}
-
-	public void run(){	
-
-
-		while(!Thread.interrupted()){
-
-			if ( messageList != null){
-				for(int i = 0; i<messageList.size(); i++ ){
-					msg = messageList.get(i);
-					if(msg != null){
-
-
-						String recipient = msg.getRecipient();
-						//System.out.println("messageList size: " + messageList.size());
-						for(int j = 0; j<userList.size(); j++){
-							if (recipient.equals(userList.get(j).getUserName()) && recipient != null &&userList.get(j).getUserName() != null ){
-								try {		
-									userList.get(j).sendToRecipient(msg);
-									messageList.remove(i);
-								} catch (IOException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-								}
-
-							}
-						}	
-					}	}
-
-			}
-		}
-	}
-
-	//	public ArrayList<ClientHandler> getUserList(){
-	//		return userList;
-	//	}
-	}
-
-	////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////
 
 	public class Connection extends Thread {
 		private int port;
 		private ServerSocket serverSocket;
+		//private User user1;
+		private String user;
 
-		public Connection(int port){
+		public Connection(String user, int port){
+			this.user = user;	
 			this.port = port;
 		}
 
 		public void run() {
 			Socket socket = null;
-
 			try(ServerSocket serverSocketCreate = new ServerSocket(port)){
 				this.serverSocket = serverSocketCreate;
 				while(!Thread.interrupted()){
 					try{
 						socket = serverSocket.accept();
 						ClientHandler clientHandler = new ClientHandler(socket);
-						userList.add(clientHandler);
+						//System.out.println("clientHandler: " +clientHandler.toString());
 						onlineLog.info("Client genom port: " + port);
-						offlineLog.info("Client logged off: " + port);
 					} catch (IOException e){
 						if(socket!=null)
 							socket.close();
 						Thread.currentThread().interrupt();
-
 					}
 				} 
 			} catch (IOException e){
 				System.err.println(e);
 			}
 		}
+
 		public void shutDown() throws IOException {
 			serverSocket.close();
 		}
 	}	
 
-
-
 	private class ClientHandler extends Thread {
 		private Socket socket;
-		private ObjectInputStream ois;
-		private ObjectOutputStream oos;
+		private ObjectInputStream objectInputStream;
+		private ObjectOutputStream objectOutputStream;
 		private boolean connectedHandler;
-		private String user;
 
 		public ClientHandler(Socket socket) throws IOException {
-			//System.out.println("New handler up!");
-			ois = new ObjectInputStream(socket.getInputStream());
-			oos = new ObjectOutputStream(socket.getOutputStream());
-
-
+			objectInputStream = new ObjectInputStream(socket.getInputStream());
+			objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
 			this.connectedHandler = true;
 			start();
 		}
 
 		public void run() {
-
-			while(user == null){
-				try{
-					String user = (String) ois.readObject();
-					this.user = user;
-				}catch (ClassNotFoundException e) {} catch (IOException e) {}
-			}
-
-
+			String text;
 			while(connectedHandler) {
-				//System.out.println("Trying to read msgs.");
-
-				try {		
-					//	System.out.println("Trying to read msgs!!!");
-					//String text = (String) ois.readObject();
-
-					Message msg = (Message) ois.readObject();
-
-
-					if(msg.getType().equals("picture")){
-						messageList.add(msg);
-
-					} else if (msg.getType().equals("message")){
-						messageList.add(msg);
-					}
-
-					//System.out.println(text);
-					//messagesLog.info("Sent from: "+ port + "Message" + text);
-
-
-				} catch (ClassNotFoundException e) {} catch (IOException e) {
-					// TODO Auto-generated catch block
+				try 
+				{		
+					text = (String) objectInputStream.readObject();
+					listMessages.add(text + "\n");
+					System.out.println(text);
+					messagesLog.info("Sent from: "+ port + "Message" + text);
+					
+					objectOutputStream.writeObject(getListMessagesAsString());
+				}  
+				catch (IOException e) 
+				{
 					connectedHandler = false;
-					if (userList != null){
-
-
-						for ( int i = 0;  i < userList.size(); i++){
-							if (getUserName() == userList.get(i).getName() ){
-								//System.out.println(userList.get(i).getName());
-								userList.remove(i);	
-							}   
-						}
-					}
-					try {
+					try 
+					{
 						close();
-					} catch (IOException e2) {
-						// TODO Auto-generated catch block
-						//e.printStackTrace();
+					} 
+					catch (IOException e2) 
+					{
+						e2.printStackTrace();
 					}
-					//	e.printStackTrace();
-				} 
-			}	
+				}
+				catch (ClassNotFoundException e) 
+				{
+					e.printStackTrace();
+				}
+			} 
 		}
-
-		public void sendToRecipient(Message msg) throws IOException{
-
-			oos.writeObject(msg);
-		}
-
-
-		public String getUserName(){
-			return user;	
-		}
-
 		public void close() throws IOException {  
 			if (socket != null)  socket.close();
-			if (ois != null)  ois.close();
-			if (oos != null) oos.close();
+			if (objectInputStream != null)  objectInputStream.close();
+			if (objectOutputStream != null) objectOutputStream.close();
 		}
+	}
 
-
+	public String list() {
+		String test;
+		return test  = Arrays.toString(listUsers.toArray());
 	}
 
 	public void disconnect(){
 		try {
 			connection.shutDown();
 		} catch(Exception e2) {
-			//			e2.printStackTrace();
-
+			e2.printStackTrace();
 		}	
 		System.out.println("Server shutdown successfully.");
 	}
-
-
 }
